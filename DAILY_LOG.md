@@ -1,36 +1,35 @@
-Daily Work Log
+DAILY LOG, errors,learning and decisions
 
-Date: 4 November 2026
-Author: Anant Joshi
+recieved the assignment on 1st november,took me 2-3 days to understand the problem clearly, read and viewed the provided research papers and github code.
 
-Received the assignment on 1st November and took 2-3 days to analyse the problem statement, go through the FastSpeech 2 reference papers and repository, understand the datasets, and plan out the architecture. Training FastSpeech 2 from scratch requires a heavy GPU which I do not have on my local laptop, so I am using Google Colab free T4 GPU until the daily usage limit reaches, and let us see how much I can train within these free limits.
+training FastSpeech 2 requires heavy gpu which i dont have on my laptop so using free collab t4 gpu till daily limit reaches and lets see how much i can train with it.
 
-What I done and implemented today:
+what i done/implemented today:
 
-1. Created the project repository, set up the directory structure, and wrote requirements file.
-2. Implemented the complete FastSpeech 2 model architecture including encoder FFT blocks, variance adaptor with duration, pitch, and energy predictors, length regulator, decoder FFT blocks, linear projection, and 5-layer PostNet.
-3. Built the English text processing frontend with number normalizer, date normalizer, time normalizer, acronym expander, and CMU dictionary with g2p_en phonemizer.
-4. Set up dataset selection for Svarah and IndicTTS to extract 5 hours of training data and 1 hour of validation data with disjoint sets.
-5. Used torchaudio MMS forced aligner to extract letter start times and compute phoneme durations.
-6. Fixed a bug in the English number verbalizer where very large numbers like phone numbers and long ID strings caused an index error in below_1000.
-7. Trained the English model on Colab T4 GPU up to step 8500 where total training loss dropped down to around 1.6.
-8. Trained the Telugu model on Colab T4 GPU up to step 6100 where validation loss reached 2.19 and duration loss dropped down to 0.063.
-9. Wrote a python script to parse the training and validation log files to generate loss curves for both languages because training was stopped before the full 30000 steps so the default plotting call was missed.
-10. Tested inference on the Telugu model. Telugu words and sound came out very clear, but noticed the ending word of sentences like undi in T2a wraps up too fast and cuts off immediately without full decay. Also tested baseline pace versus slightly slower pace.
+1. setup the github repo, directory structure and requirements.
+2. implemented the complete fastspeech 2 model architecture with encoder, variance adaptor for duration, pitch, energy, length regulator, decoder and postnet.
+3. wrote english text processing with number verbalizer, date and time normalizer, abbreviations and g2p phonemes.
+4. did data selection for svarah and indictts to get 5 hours train and 1 hour validation separate data.
+5. extracted letter alignments and phoneme durations using mms aligner.
+6. fixed a bug in number verbalizer where very large numbers like phone numbers crashed with index error in below_1000 function.
+7. trained english model on collab t4 gpu till 8500 steps, training loss came down from around 13 to 1.6.
+8. trained telugu model on collab t4 gpu till 6100 steps, validation loss reached 2.19 and duration loss went down to 0.063.
+9. wrote python script to plot training and validation loss curves from saved logs because training was stopped before 30000 steps so default plotting didnt trigger.
+10. ran inference on telugu sentences, words and sound came out very clear, but noticed ending words like undi in t2a wrap up too fast and cut off immediately. tested baseline speed and slightly slower pace.
 
-What problem I am facing right now:
+what problem i am facing right now:
 
-1. English test audio quality is very blurry, muffled, and mumbled. It is hard to understand what words are being spoken, whereas Telugu audio came out clear.
-2. When checking predicted durations for English sentence E2a, found out that the space token between words had duration 0, meaning all words were glued together without any pause.
-3. Even after fixing the space duration to give words a natural pause, the English voice has a noticeable shaking, trembling, or vibrating disturbance in it.
-4. The free GPU limit on my Google Colab account got exhausted for today, so the session got disconnected and switched to standard CPU.
-5. In Telugu sentences, the last word of every sentence cuts off too abruptly as soon as the last letter finishes.
+1. english generated audio is very blurry, muffled and mumbled, words are hard to understand unlike telugu which is clear.
+2. checked predicted durations for english sentence e2a and saw that space token between words had 0 duration, so words were crashing into each other without any pause.
+3. even after fixing space duration to give words small pause, there is still a noticeable shaking, vibrating disturbance in the voice.
+4. collab free gpu daily limit got exhausted today so runtime disconnected and switched to cpu.
+5. in telugu sentences the last word cuts off abruptly without fading naturally.
 
-What I am trying to solve and fix it:
+what i am trying to solve/fix it:
 
-1. Tested ground truth audio from the Svarah dataset and vocoded it through HiFi-GAN. Both came out completely clear, proving that the vocoder and the dataset audio are fine, and the issue is inside the trained model.
-2. Analyzed why Telugu converged so fast while English is muffled. Telugu has only 1 speaker in a quiet studio booth, so 6000 steps meant 35 full passes over that single voice. English has 115 different speakers on mobile phones, so at 8000 steps the model only saw each speaker around 20 times and is trying to average across 115 different voices at once.
-3. Instead of trying to continue training across all 115 speakers under limited GPU time, decided on a fine-tuning strategy: use the 8000 steps as multi-speaker pre-training, and then fine-tune specifically on Speaker 74, who has around 100 utterances and the cleanest voice. Wrote the fine-tuning script to train on Speaker 74 for 2500 steps once GPU access is back.
-4. For the Telugu audio ending cutoff, added trailing silence padding and extra duration frames to the final syllable so the ending words ring out and finish completely without sudden cutoff. Also tested slightly slower pace around 1.08 to 1.12 which sounds more relaxed and natural.
+1. tested ground truth audio from svarah dataset directly and vocoded it with hifigan, both were completely clear so dataset and vocoder are not the issue, problem is inside trained model representation.
+2. figured out why telugu is clear while english is muffled, telugu has only 1 speaker in studio so 6000 steps was 35 passes over that single voice, but english has 115 different speakers on phones so 8000 steps is only around 20 passes per speaker and model is struggling to average 115 voices.
+3. decided to use the 8000 steps as multi speaker pretraining and now shifting focus to fine tune specifically on speaker 74 who has around 100 utterances and cleanest voice. wrote finetuning script to train on speaker 74 for next 2500 steps once gpu is available.
+4. for telugu ending cutoff, added trailing silence padding and extra duration frames on final vowel so last words like undi finish fully and ring out naturally. also tried slightly slower pace around 1.08 to 1.12 which sounds more relaxed.
 
-That is the wrap for today, now exhausted, will continue the remaining fixation and improvement tomorrow.
+thats the wrap for today,now exhausted,will continue the remaining fixation /improvement tomorrow.
