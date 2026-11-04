@@ -28,30 +28,20 @@
 
 ---
 
-### Issues faced & current debugging: English audio quality
+### Issues faced & current debugging: English test sentence quality
 
-#### The Problem
-When running inference on the five English test sentences (`E1` to `E4`), the generated speech came out muffled, mumbled, and hard to understand, whereas the Telugu model produced very clear speech out of the box. Even after adjusting duration and volume, there is still an audible disturbance/flutter in the English voice.
-
-#### Observations & Root-Cause Analysis
-1. **Dataset difference (Studio vs Crowdsourced)**:
-   - Telugu uses IndicTTS: a single speaker recorded in a professional sound booth with a studio condenser microphone. Clean acoustics, no ambient noise, very consistent timbre.
-   - English uses Svarah: crowdsourced across ~115 speakers recording conversational sentences via mobile phones in varying real-world rooms. Background noise, phone mic compression, room reverberation, and wide accent variation are present directly in the training audio. FastSpeech 2 naturally learns this composite acoustic profile.
-2. **Word spacing collapse (0 ms duration on spaces)**:
-   - Inspected `test_predictions.json` for sentence `E2a`:
-     ```
-     tokens:    ['DH', 'AH0', ' ', 'AO1', 'R', 'K', 'AH0', 'S', 'T', 'R', 'AH0', 'Z', ' ', 'K', ...]
-     durations: [139.3, 92.9, 0.0, 116.1, 58.0, 34.8, 116.1, 58.0, 46.4, 92.9, 0.0, ...]
-     ```
-   - Every `' '` (space token) predicted `0.0` duration frames. During inference, `length_regulate` discarded the space tokens entirely, smashing words into one continuous slur (`Theorchestrasconduct...`).
-   - Gave space tokens an explicit 4-frame (~46 ms) word boundary and short consonants a minimum frame floor. Words became separated and recognizable, but the voice timbre still has an audible buzz/tremor.
-3. **Pitch jitter & energy flutter**:
-   - Inspected the predicted pitch values: rapid jumps between adjacent phonemes (e.g. 137 Hz -> 177 Hz -> 148 Hz on a single phoneme transition).
-   - This rapid variation acts like a fast vibrato/tremolo effect.
-   - Tested moving-average smoothing over the predicted pitch and energy vectors.
-4. **Current Diagnostic**:
-   - Testing ground truth audio directly from Svarah (`1_original_svarah_dataset_audio.wav`) and vocoding ground-truth Mel through HiFi-GAN (`2_ground_truth_mel_vocoded.wav`) to isolate how much of the blur is dataset acoustics versus model training artifacts.
-   - Also noticed `common.load_vocoder` adds `/content/FastSpeech2_ref` to `sys.path`, which can shadow local `model.py` and `text.py` imports in the interactive kernel; cleaned up `sys.path` after loading.
+#### The exact issue observed right now
+When listening to the generated audio for the five English test sentences (`E1`, `E2a`, `E2b`, `E3`, `E4`):
+- The Telugu sentences (`T1`–`T4`) came out very clear, natural, and easily understandable.
+- The English sentences, however, came out heavily muffled, mumbled, and largely unintelligible — only a few words could be barely made out.
+- Tested slowing down duration (`dur_ctl=1.2`, `1.35`) and testing different speaker IDs (`0, 1, 2, 5, 10`). Words were still slurred.
+- Diagnosed the predicted durations: discovered that every single space token `' '` between words had predicted `0.0 ms` duration, causing adjacent words to slam into each other with zero breath or pause.
+- Added explicit 4-frame (~46 ms) word boundary pauses on spaces and gave short consonants a 3-frame floor (`fix_spaces.py`). This separated the words so individual words could now be identified, but revealed another serious issue: **a persistent shaking, vibrating, jittery disturbance / robotic flutter** in the voice itself.
+- Tested eliminating pitch jitter and energy flutter with 3-tap moving-average smoothing (`A_smooth_pitch_energy_clean_voice.wav`) and even completely flat/neutral pitch and energy (`C_steady_neutral_pitch_zero_shake.wav`). Surprisingly, the shaking/vibrating disturbance was still clearly audible even with zero pitch or energy variation.
+- **Current active experiment (`test_root_cause.py`)**: Isolating the root cause by comparing:
+  1. `1_original_svarah_dataset_audio.wav`: Original audio recorded by the actual person in Svarah.
+  2. `2_ground_truth_mel_vocoded.wav`: The ground-truth Svarah audio converted to Mel and reconstructed through HiFi-GAN.
+  This will definitively tell us whether the jitter/shaking is an inherent acoustic artifact of Svarah's noisy mobile phone recordings, a Mel-scale/phase incompatibility with the HiFi-GAN universal vocoder, or an issue in the model's mel-linear/decoder representations.
 
 ---
 
