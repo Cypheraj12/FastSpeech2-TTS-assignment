@@ -1,14 +1,11 @@
-# Engineering Work Log & Daily Notes
-
-**Project:** FastSpeech 2 TTS (English & Telugu)  
-**Author:** Anant Joshi  
+# DAILY LOG, errors,learning and decisions
 **Repo:** `FastSpeech2-TTS-assignment`
 
----
+recieved the assignment on 1st november,took me 2-3 days to understand the problem clearly, read and viewed the provided research papers and github code.
 
 ## November 4, 2026
 
-### What got done today
+### What got done today -
 - Setup base project structure, `.gitignore`, and minimal dependencies (`requirements.txt`).
 - Implemented FastSpeech 2 architecture with multi-speaker embedding support (encoder FFT blocks, variance adaptor with duration/pitch/energy predictors and length regulator, decoder FFT blocks, linear mel projection, and 5-layer PostNet).
 - Added English text frontend:
