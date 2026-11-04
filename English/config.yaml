@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------- English (Svarah) FastSpeech 2
+language: English
+paths:
+  raw_dir: /content/work/English/raw                 # selected 22.05 kHz wavs + manifests (local, fast)
+  preprocessed_dir: /content/work/English/preprocessed
+  checkpoint_dir: ./checkpoints                      # notebook points this at Google Drive
+  results_dir: ../Results/English
+  vocoder_repo: /content/FastSpeech2_ref             # clone of ming024/FastSpeech2 (HiFi-GAN universal)
+data:
+  hf_dataset: ai4bharat/Svarah                       # gated: accept terms on HF + set HF_TOKEN
+  hf_split: test
+  train_hours: 5.0
+  val_hours: 1.0
+  min_duration: 1.0                                  # seconds
+  max_duration: 10.0
+  seed: 42
+audio:
+  sampling_rate: 22050
+  n_fft: 1024
+  win_length: 1024
+  hop_length: 256
+  n_mels: 80
+  fmin: 0
+  fmax: 8000
+align:
+  word_final_cap: 0.2                                # seconds kept by a word-final letter before a pause
+model:                                               # same sizes as the reference repo (LJSpeech config)
+  d_model: 256
+  n_heads: 2
+  enc_layers: 4
+  dec_layers: 6
+  ff_dim: 1024
+  kernel_size: [9, 1]
+  dropout: 0.1
+  var_filter: 256
+  var_kernel: 3
+  var_dropout: 0.5
+  n_bins: 256
+train:
+  batch_size: 16
+  total_steps: 30000
+  warmup_steps: 4000
+  lr_scale: 1.0
+  grad_clip: 1.0
+  log_every: 100
+  val_every: 1000
+  save_every: 2000
+  keep_last: 3
+  num_workers: 2
+  seed: 1234

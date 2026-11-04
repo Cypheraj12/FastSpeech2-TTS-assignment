@@ -1,0 +1,17 @@
+# Tested layout: Google Colab (Python 3.10+, NVIDIA T4). torch / torchaudio come preinstalled on Colab.
+torch>=2.1
+torchaudio>=2.1            # provides the multilingual MMS_FA CTC model used for forced alignment
+numpy
+scipy
+pyyaml
+pandas
+matplotlib
+librosa>=0.10
+soundfile
+pyworld                    # F0 extraction (DIO + StoneMask)
+tqdm
+datasets>=2.19             # Svarah / IndicTTS Telugu download + streaming
+huggingface_hub
+g2p_en                     # English grapheme-to-phoneme (CMUdict + neural fallback)
+nltk
+inflect

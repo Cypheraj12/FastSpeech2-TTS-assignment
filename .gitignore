@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Data / temporary work directories (created during Colab / local run)
+work/
+data/
+*.tar
+*.zip
+
+# Checkpoint step files (only keep best.pt or use external download links)
+English/checkpoints/step_*.pt
+Telugu/checkpoints/step_*.pt
+!English/checkpoints/.gitkeep
+!Telugu/checkpoints/.gitkeep
+
+# OS generated
+.DS_Store
+Thumbs.db
