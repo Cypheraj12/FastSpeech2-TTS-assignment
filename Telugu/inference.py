@@ -1,4 +1,3 @@
-"""Synthesise the five Telugu test sentences and write audio + variance-adaptor plots.
 
     python inference.py --config config.yaml [--ckpt checkpoints/best.pt] [--text "any sentence"]
 """
