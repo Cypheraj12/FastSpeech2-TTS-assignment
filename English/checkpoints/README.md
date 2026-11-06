@@ -11,6 +11,9 @@ Due to GitHub's 100 MB per-file tracking limit, binary PyTorch checkpoint weight
 | `ft_top3_clean_best.pt` | ~128 MB | 2,500 (ft) | **0.9930** | 0.460 | Targeted acoustic adaptation on clean speakers |
 | `ft_top4_clean_6000steps.pt`| ~128 MB | 6,000 (ft) | **0.9520** | 0.435 | Deep fine-tuning on top-4 clean voices |
 
+### Download Link
+- [Google Drive English Checkpoints Folder](https://drive.google.com/drive/folders/1sH6JH3BGcYfuDA7JYUP3U6IBhGcGVe1S?usp=drive_link)
+
 ### Google Drive Storage Path
 - Primary: `/content/drive/MyDrive/project/English/checkpoints/`
 - Mirror: `/content/drive/MyDrive/project (1)/English/checkpoints/`

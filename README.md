@@ -124,4 +124,15 @@ The evaluation suite tests phonological edge cases, stress shifts, loanwords, an
 
 ## Checkpoints
 
-Trained checkpoints are stored in `English/checkpoints/` and `Telugu/checkpoints/` (with links to Google Drive storage for full weights).
+Due to GitHub's 100 MB file-size limit, trained model checkpoints (~128 MB each) are hosted on Google Drive:
+
+* **English Checkpoints:** [Download English Checkpoints (Google Drive)](https://drive.google.com/drive/folders/1sH6JH3BGcYfuDA7JYUP3U6IBhGcGVe1S?usp=drive_link)
+  * **Best / Used for Final Inference:** `ft_top3_clean_best.pt` (fine-tuned on clean speaker data; eliminates multi-speaker blurring).
+  * Base multi-speaker model: `best.pt` (step 7,000, lowest validation loss across 115 speakers).
+
+* **Telugu Checkpoints:** [Download Telugu Checkpoints (Google Drive)](https://drive.google.com/drive/folders/1754k2h3_iwyKGWcj_v0_TZbN0WACzoIt?usp=sharing)
+  * **Best / Used for Final Inference:** `best.pt` (step 6,000, lowest validation loss of 2.1991).
+
+To run inference, place the downloaded `.pt` files into their respective directory:
+* `English/checkpoints/`
+* `Telugu/checkpoints/`

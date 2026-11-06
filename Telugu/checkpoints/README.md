@@ -11,6 +11,9 @@ Due to GitHub's 100 MB per-file tracking limit, binary PyTorch checkpoint weight
 | `step_6000.pt` | ~128 MB | 6,000 | **2.1991** | 0.685 | Best validation loss checkpoint |
 | `best.pt` | ~128 MB | 6,000 | **2.1991** | 0.685 | Official submission checkpoint |
 
+### Download Link
+- [Google Drive Telugu Checkpoints Folder](https://drive.google.com/drive/folders/1754k2h3_iwyKGWcj_v0_TZbN0WACzoIt?usp=sharing)
+
 ### Google Drive Storage Path
 - Primary: `/content/drive/MyDrive/project/Telugu/checkpoints/`
 - Mirror: `/content/drive/MyDrive/project (1)/Telugu/checkpoints/`
