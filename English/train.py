@@ -1,4 +1,4 @@
-"""FastSpeech 2 training (single GPU). Resumes automatically from the newest checkpoint.
+"""
 
     python train.py --config config.yaml [--max_minutes 330]
 """
