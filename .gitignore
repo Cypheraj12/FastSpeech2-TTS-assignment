@@ -24,3 +24,18 @@ Telugu/checkpoints/step_*.pt
 # OS generated
 .DS_Store
 Thumbs.db
+
+# Excluded per submission structure specification
+Report/
+notebook/
+tests/
+English/finetune_speaker.py
+English/test_sentences.json
+Telugu/test_sentences.json
+Results/*/data_selection/
+Results/*/logs/
+Results/*/*.json
+daily_log/7 nov.md
+
+# Intermediate HTML
+Report/*.html

@@ -28,7 +28,7 @@ got back to work today after collab gpu limit reset. main focus today was fixing
 
 1. chose 2500 steps with cosine learning rate decay and saved intermediate checkpoints at 1500 and 2000 steps so i can compare and pick the best sounding model.
 2. once fine tuning is finished, will generate all five english test sentences e1 to e4 and inspect their variance adaptor plots.
-3. will download the full results folder from drive, verify all wav files, and prepare the technical report tomorrow.
+3. will download the full results folder from drive and verify all wav files and plots tomorrow.
 
 
 **thats the progress for nov 5, english training is currently finishing up and telugu is completely ready.**

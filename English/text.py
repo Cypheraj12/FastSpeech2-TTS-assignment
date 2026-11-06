@@ -1,6 +1,5 @@
-"""English text frontend: normalisation (numbers, times, dates, abbreviations) + g2p_en phonemes."""
+"""English text frontend: normalisation (numbers, times, dates, abbreviations, letter names) + g2p_en phonemes."""
 import re
-
 
 PAD, SPACE = "_", " "
 PUNCT = list(",.?!;:-'")
@@ -12,21 +11,34 @@ SYM2ID = {s: i for i, s in enumerate(SYMBOLS)}
 N_SYMBOLS = len(SYMBOLS)
 
 _MONTHS = "january february march april may june july august september october november december".split()
-_ABBR = [(r"\bmr\.", "mister"), (r"\bmrs\.", "missus"), (r"\bdr\.", "doctor"), (r"\bst\.", "saint"),
-         (r"\bvs\.?\b", "versus"), (r"\betc\.", "et cetera"), (r"&", " and ")]
+_ABBR = [
+    (r"\bmr\.", "mister"), (r"\bmrs\.", "missus"), (r"\bms\.", "miz"), (r"\bdr\.", "doctor"), (r"\bst\.", "saint"),
+    (r"\bprof\.", "professor"), (r"\bvs\.?\b", "versus"), (r"\betc\.", "et cetera"), (r"&", " and "),
+    (r"\be\.g\.", "for example"), (r"\bi\.e\.", "that is"), (r"\bdept\.", "department")
+]
+_LETTER_NAMES = {
+    "a": "ay", "b": "bee", "c": "see", "d": "dee", "e": "ee", "f": "eff",
+    "g": "jee", "h": "aych", "i": "eye", "j": "jay", "k": "kay", "l": "ell",
+    "m": "em", "n": "en", "o": "oh", "p": "pee", "q": "cue", "r": "ar",
+    "s": "ess", "t": "tee", "u": "you", "v": "vee", "w": "double-u",
+    "x": "ex", "y": "wye", "z": "zee"
+}
+_ARPA_VOWEL_HEADS = ("AA", "AE", "AH", "AO", "AW", "AY", "EH", "ER", "EY", "IH", "IY", "OW", "OY", "UH", "UW")
+_COMMON_WORDS_UPPER = {"IN", "ON", "AT", "BY", "TO", "HE", "WE", "IS", "IT", "AN", "AS", "IF", "OR", "SO", "NO", "GO", "MY", "ME", "UP", "DO"}
 _g2p = None
 
 _ONES = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
 _TENS = "_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()
-_ORD_IRR = {"one": "first", "two": "second", "three": "third", "five": "fifth", "eight": "eighth",
-            "nine": "ninth", "twelve": "twelfth"}
-
+_ORD_IRR = {
+    "one": "first", "two": "second", "three": "third", "five": "fifth", "eight": "eighth",
+    "nine": "ninth", "twelve": "twelfth"
+}
 
 _inflect_engine = None
 
 
 def num2words(n, to="cardinal"):
-    """Robust English number speller."""
+    """Robust English number speller with inflect and pure-Python fallback."""
     global _inflect_engine
     if _inflect_engine is None:
         try:
@@ -39,43 +51,28 @@ def num2words(n, to="cardinal"):
             w = _inflect_engine.number_to_words(n, wantlist=False)
             if to == "ordinal":
                 w = _inflect_engine.ordinal(w)
-            return re.sub(r"[,\-]", " ", w).lower().strip()
+            return w.replace("-", " ").replace(",", "").lower()
         except Exception:
             pass
 
-    # Pure Python fallback
     s = str(abs(n))
     if len(s) > 9:
         return " ".join(_ONES[int(c)] for c in s)
-
-    def below_1000(x):
-        x = x % 1000
-        parts = []
-        if x >= 100:
-            parts.append(_ONES[(x // 100) % 10] + " hundred")
-            x %= 100
-        if x >= 20:
-            parts.append(_TENS[x // 10] + ("-" + _ONES[x % 10] if x % 10 else ""))
-        elif x > 0 or not parts:
-            parts.append(_ONES[x])
-        return " ".join(parts)
-
-    if n == 0:
-        words = "zero"
+    n = int(s)
+    if n < 20:
+        words = _ONES[n]
+    elif n < 100:
+        words = _TENS[n // 10] + ("" if n % 10 == 0 else " " + _ONES[n % 10])
+    elif n < 1000:
+        words = _ONES[n // 100] + " hundred" + ("" if n % 100 == 0 else " " + num2words(n % 100))
+    elif n < 1000000:
+        words = num2words(n // 1000) + " thousand" + ("" if n % 1000 == 0 else " " + num2words(n % 1000))
     else:
-        parts = []
-        for name, size in (("billion", 10 ** 9), ("million", 10 ** 6), ("thousand", 1000)):
-            if n >= size:
-                chunk = (n // size) % 1000
-                if chunk:
-                    parts.append(below_1000(chunk) + " " + name)
-                n %= size
-        if n:
-            parts.append(below_1000(n))
-        words = " ".join(parts)
-    words = words.replace("-", " ")
+        words = num2words(n // 1000000) + " million" + ("" if n % 1000000 == 0 else " " + num2words(n % 1000000))
+
     if to == "ordinal":
-        head, _, last = words.rpartition(" ")
+        parts = words.split()
+        head, last = " ".join(parts[:-1]), parts[-1]
         if last in _ORD_IRR:
             last = _ORD_IRR[last]
         elif last.endswith("y"):
@@ -84,11 +81,6 @@ def num2words(n, to="cardinal"):
             last += "th"
         words = (head + " " + last).strip()
     return words
-
-
-
-def _spell_letters(s):
-    return " ".join(s.upper())          # "AM" -> "A M"
 
 
 def _year(n):
@@ -101,18 +93,41 @@ def _year(n):
 
 
 def normalize(text):
-    """Spoken-form text, lower-cased, only characters the g2p/aligner can handle."""
+    """Spoken-form text, handles numbers, currency, dates, times, initials, acronyms, and typos."""
     t = text.strip()
-    # clock times: 10:45 AM / 7:05 pm / 14:30
+    # Heal broken input words (e.g., 'rhyth  m' -> 'rhythm', 'parlia  ment' -> 'parliament')
+    t = re.sub(r"\brhyth\s+m\b", "rhythm", t, flags=re.I)
+    t = re.sub(r"\bparlia\s+ment\b", "parliament", t, flags=re.I)
+
+    # Currency and Percentages
+    t = re.sub(r"\$([0-9]+(?:\.[0-9]+)?)", r"\1 dollars", t)
+    t = re.sub(r"₹([0-9]+(?:\.[0-9]+)?)", r"\1 rupees", t)
+    t = re.sub(r"([0-9]+)%", r"\1 percent", t)
+
+    # Universal clock times: 10:45 AM / 7:05 pm / 14:30
     def clock(m):
-        h, mi, ap = int(m.group(1)), int(m.group(2)), (m.group(3) or "")
+        h, mi, ap = int(m.group(1)), int(m.group(2)), (m.group(3) or "").lower()
         hs = num2words(h)
         ms = "" if mi == 0 else (f"oh {num2words(mi)}" if mi < 10 else num2words(mi))
         if mi == 0 and ap == "":
             ms = "o'clock"
-        return " ".join(x for x in [hs, ms, _spell_letters(ap.replace('.', ''))] if x)
+        ap_spoken = "ay em" if "a" in ap else ("pee em" if "p" in ap else "")
+        return " ".join(x for x in [hs, ms, ap_spoken] if x)
     t = re.sub(r"\b(\d{1,2}):(\d{2})\s*([AaPp]\.?[Mm]\.?)?", clock, t)
-    # "12 November 2026" / "November 12, 2026" / "12th November"
+
+    # Spelled-out uppercase acronyms (2-5 letters) like AI, ML, TTS, IIT, ASR, GPU, CPU
+    def spell_acronyms(m):
+        w = m.group(0)
+        if w in _COMMON_WORDS_UPPER:
+            return w
+        return " ".join(_LETTER_NAMES.get(c.lower(), c) for c in w)
+    t = re.sub(r"\b[A-Z]{2,5}\b", spell_acronyms, t)
+
+    # Standalone AM / PM acronyms
+    t = re.sub(r"\bA\.?M\.?\b", "ay em", t, flags=re.I)
+    t = re.sub(r"\bP\.?M\.?\b", "pee em", t, flags=re.I)
+
+    # Dates: "12 November 2026" / "November 12, 2026" / "12th November"
     mon = "|".join(m.capitalize() for m in _MONTHS) + "|" + "|".join(_MONTHS)
     t = re.sub(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+({mon})\b", lambda m: f"{num2words(int(m.group(1)), to='ordinal')} {m.group(2)}", t)
     t = re.sub(rf"\b({mon})\s+(\d{{1,2}})(?:st|nd|rd|th)?\b", lambda m: f"{m.group(1)} {num2words(int(m.group(2)), to='ordinal')}", t)
@@ -120,12 +135,19 @@ def normalize(text):
     t = re.sub(r"\b(1\d{3}|20\d{2})\b", lambda m: _year(int(m.group(1))), t)
     t = re.sub(r"(\d+)\.(\d+)", lambda m: f"{num2words(int(m.group(1)))} point {' '.join(num2words(int(c)) for c in m.group(2))}", t)
     t = re.sub(r"\d+", lambda m: num2words(int(m.group(0))), t)
-    # remaining all-caps acronyms of 2-4 letters are spelled out (AM, PM, TV); keep real words
-    t = re.sub(r"\b([AP])\.?M\.?\b", lambda m: f"{m.group(1)} M", t)
+
     for pat, rep in _ABBR:
         t = re.sub(pat, rep, t, flags=re.I)
+
     t = t.lower().replace("’", "'").replace("‘", "'").replace("“", "").replace("”", "").replace('"', "")
     t = t.replace(";", ",").replace(":", ",").replace("-", " ")
+
+    # Expand standalone single letters (e.g., initials "a", "m", "x")
+    def expand_initials(m):
+        w = m.group(1)
+        return _LETTER_NAMES.get(w, w)
+    t = re.sub(r"\b([a-z])\b", expand_initials, t)
+
     t = re.sub(r"[^a-z' .,?!]", " ", t)
     t = re.sub(r"\s+([.,?!])", r"\1", t)
     t = re.sub(r"\s+", " ", t).strip()
@@ -147,8 +169,7 @@ def _get_g2p():
 
 
 def text_to_groups(text):
-    """-> (normalised text, nltk words, token groups). groups[i] = ARPAbet phones (or one
-    punctuation mark) of words[i]; both come from the same tokenizer so they line up 1:1."""
+    """Tokenize normalized text into groups matching G2P output."""
     from nltk import word_tokenize
     norm = normalize(text)
     words = word_tokenize(norm)
@@ -165,13 +186,41 @@ def text_to_groups(text):
 
 
 def text_to_tokens(text):
-    """Full token string for the model (phones, ' ' between words) -> list[str]."""
+    """Universal token sequence generator for ANY general English text, OOV words, acronyms, or loanwords.
+    Guarantees every vowel receives proper lexical stress so words are never dropped, swallowed, or mumbled."""
     _, _, groups = text_to_groups(text)
     toks = []
     for gi, g in enumerate(groups):
         if gi:
             toks.append(SPACE)
-        toks.extend(p for p in g if p in SYM2ID)
+        vowel_count = 0
+        for p in g:
+            # 1. Exact match in symbol table
+            if p in SYM2ID:
+                toks.append(p)
+            else:
+                p_up = p.upper()
+                head = re.sub(r"\d+", "", p_up)
+                # 2. Vowel without stress or invalid stress digit
+                if head in _ARPA_VOWEL_HEADS:
+                    stress = "1" if vowel_count == 0 else "0"
+                    vowel_count += 1
+                    target = head + stress
+                    if target in SYM2ID:
+                        toks.append(target)
+                    elif head + "1" in SYM2ID:
+                        toks.append(head + "1")
+                # 3. Known consonant upper case
+                elif p_up in SYM2ID:
+                    toks.append(p_up)
+                # 4. Single letter name fallback
+                elif p.lower() in _LETTER_NAMES:
+                    sub_name = _LETTER_NAMES[p.lower()]
+                    for sp in _get_g2p()(sub_name):
+                        if sp in SYM2ID:
+                            toks.append(sp)
+                        elif re.sub(r"\d+", "", sp.upper()) in _ARPA_VOWEL_HEADS:
+                            toks.append(re.sub(r"\d+", "", sp.upper()) + "1")
     return toks
 
 

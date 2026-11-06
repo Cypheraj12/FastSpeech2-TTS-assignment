@@ -125,7 +125,18 @@ def main():
     ckpt = args.ckpt or os.path.join(p["checkpoint_dir"], "best.pt")
     model, stats, step = load_model(cfg, ckpt, dev)
     voc = common.load_vocoder(p["vocoder_repo"], dev)
-    sents = {"custom": args.text} if args.text else json.load(open("test_sentences.json", encoding="utf-8"))
+    if args.text:
+        sents = {"custom": args.text}
+    elif os.path.exists("test_sentences.json"):
+        sents = json.load(open("test_sentences.json", encoding="utf-8"))
+    else:
+        sents = {
+            "T1": "న్యూ రోఫార్మ కోలాజికల్ పరిశోధనలోనూతన ఔషధాల ప్రభావాన్ని విశ్లషే ించారు.",
+            "T2a": "తాడుపై అతని పట్టుచాలా బలంగా ఉంది.",
+            "T2b": " ఆమె పట్టుచీరను ధరించి వేడుకకు వచ్చ ింది.",
+            "T3": "పులి అడ విలో నిశ్శబ్ంద గా నడిచింది.",
+            "T4": "ఈ సమావేశం 2026 నవంబర్ 12వ తేదీ ఉదయం 10:45 గంటలకు ప్రారంభమవుతుంది, సమయానికిసిద్ంధ గా ఉంచండి."
+        }
     res = p["results_dir"]
     dirs = {"audio": os.path.join(res, "test_generated_audios"),
             "duration": os.path.join(res, "variance_adaptor_plots", "duration"),
@@ -147,7 +158,9 @@ def main():
         print(f"{sid}: {summary[sid]['audio_sec']} s -> {dirs['audio']}/{sid}.wav")
     with open(os.path.join(res, "test_predictions.json"), "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=1)
+    common.plot_losses(res, p['checkpoint_dir'], cfg['language'])
 
 
 if __name__ == "__main__":
     main()
+

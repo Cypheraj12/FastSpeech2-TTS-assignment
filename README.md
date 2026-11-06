@@ -10,33 +10,42 @@ An independent implementation and evaluation of the FastSpeech 2 non-autoregress
 ```
 project/
 ├── English/
-│   ├── model.py             # FastSpeech 2 network (FFT blocks, Variance Predictors, PostNet)
-│   ├── common.py            # Audio features, PyWorld F0, CTC alignment, plotting utilities
-│   ├── text.py              # Text normalizer and G2P phoneme conversion (g2p_en)
-│   ├── preprocess.py        # Svarah selection (~5h train / ~1h val) & feature extraction
-│   ├── train.py             # Training loop with validation logging and checkpointing
-│   ├── inference.py         # Test sentence synthesis and variance adaptor plotting
-│   ├── config.yaml          # Audio, model, and training hyperparameters
-│   ├── test_sentences.json  # Benchmark evaluation sentences (E1 - E4)
-│   └── checkpoints/         # Model weights (best.pt)
+│   ├── train.py
+│   ├── preprocess.py
+│   ├── inference.py
+│   ├── config.yaml
+│   └── checkpoints/
 ├── Telugu/
-│   ├── model.py             # FastSpeech 2 network
-│   ├── common.py            # Audio feature utilities and CTC alignment
-│   ├── text.py              # Telugu Unicode character frontend and number verbalizer
-│   ├── preprocess.py        # IndicTTS streaming selection & feature extraction
-│   ├── train.py             # Telugu model training script
-│   ├── inference.py         # Telugu inference and variance adaptor plotting
-│   ├── config.yaml          # Telugu hyperparameters
-│   ├── test_sentences.json  # Benchmark evaluation sentences (T1 - T4)
-│   └── checkpoints/         # Telugu model weights
+│   ├── train.py
+│   ├── preprocess.py
+│   ├── inference.py
+│   ├── config.yaml
+│   └── checkpoints/
 ├── Results/
-│   ├── English/             # Loss plots, generated audio samples, variance plots
-│   └── Telugu/              # Loss plots, generated audio samples, variance plots
-├── Report/                  # Technical report and metric extraction scripts
-├── notebook/                # GPU execution notebook (Colab T4)
-├── tests/                   # Smoke tests verifying frontend, model, and aligner
-├── requirements.txt         # Python dependencies
-└── README.md
+│   ├── English/
+│   │   ├── training_loss.png
+│   │   ├── validation_loss.png
+│   │   ├── test_generated_audios/
+│   │   └── variance_adaptor_plots/
+│   │       ├── duration/
+│   │       ├── pitch/
+│   │       └── energy/
+│   └── Telugu/
+│       ├── training_loss.png
+│       ├── validation_loss.png
+│       ├── test_generated_audios/
+│       └── variance_adaptor_plots/
+│           ├── duration/
+│           ├── pitch/
+│           └── energy/
+├── Report/
+│   └── Technical_Report.pdf
+├── README.md
+├── daily_log/
+│   ├── 4 nov.md
+│   ├── 5 nov.md
+│   └── 6 nov.md
+└── requirements.txt
 ```
 
 ---
@@ -115,10 +124,4 @@ The evaluation suite tests phonological edge cases, stress shifts, loanwords, an
 
 ## Checkpoints
 
-Trained checkpoints are stored in `English/checkpoints/best.pt` and `Telugu/checkpoints/best.pt` based on the lowest validation loss. Model weights exceeding GitHub's file-size limits are tracked via Git LFS or external public storage links.
-
----
-
-## Technical Report & Analysis
-
-A comprehensive technical report covering loss convergence behavior, speech quality, phoneme duration patterns, pitch and energy variance plots, and a comparative analysis between the English and Telugu models is documented in `Report/Technical_Report.pdf`.
+Trained checkpoints are stored in `English/checkpoints/` and `Telugu/checkpoints/` (with links to Google Drive storage for full weights).
