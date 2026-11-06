@@ -1,4 +1,4 @@
-
+"""
     python inference.py --config config.yaml [--ckpt checkpoints/best.pt] [--text "any sentence"]
 """
 import argparse
