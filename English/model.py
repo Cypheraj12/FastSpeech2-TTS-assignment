@@ -1,10 +1,8 @@
-"""Compact FastSpeech 2 (Ren et al., 2021).
-
-Re-implementation that follows the structure of the reference repo
+"""
+it is the Re-implementation that follows the structure of the reference repo
 (ming024/FastSpeech2): FFT-block encoder -> variance adaptor (duration / pitch /
 energy predictors + length regulator) -> FFT-block decoder -> mel linear -> PostNet.
-Pitch and energy are phoneme(token)-level, quantised into 256 bins and embedded,
-exactly as in the reference implementation. Optional speaker embedding (multi-speaker corpora).
+Pitch and energy are phoneme(token)-level, quantised into 256 bins and embedded.
 """
 import torch
 import torch.nn as nn
