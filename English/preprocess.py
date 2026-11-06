@@ -1,11 +1,4 @@
-"""English / Svarah preprocessing.
-
-Stage 1 `select`   : pick ~5 h train + ~1 h validation from Svarah, write 22.05 kHz wavs + manifests.
-Stage 2 `features` : mel, energy, F0 and forced-alignment durations -> preprocessed_dir/*.npz.
-
-    python preprocess.py --stage select
-    python preprocess.py --stage features
-"""
+"""Audio preprocessing and feature extraction."""
 import argparse
 import csv
 import io
@@ -21,7 +14,6 @@ import common
 import text as frontend
 
 
-# ------------------------------------------------------------------------------------ audio io
 def to_mono_22k(wav, sr, target):
     import librosa
     if wav.ndim > 1:
@@ -32,7 +24,6 @@ def to_mono_22k(wav, sr, target):
     return (wav / peak * 0.95 if peak > 0 else wav).astype(np.float32)
 
 
-# ------------------------------------------------------------------------------------ stage 1
 def clean_transcript(t):
     t = re.sub(r"[\[<(][^\]>)]*[\]>)]", " ", t or "")            # drop [noise] <laugh> (tags)
     t = re.sub(r"\s+", " ", t).strip()
@@ -61,7 +52,6 @@ def select(cfg):
 
     rng = np.random.RandomState(d["seed"])
     order = rng.permutation(len(ds))
-    # ---- candidate filtering (seeded random order, first-come) -------------------------------
     cands, seen_text, dropped = [], set(), {"duration": 0, "empty_text": 0, "duplicate_text": 0}
     for idx in tqdm(order, desc="filtering"):
         row = ds[int(idx)]
@@ -99,7 +89,6 @@ def select(cfg):
     assert not ({c["index"] for c in splits["train"]} & {c["index"] for c in splits["val"]})
     assert not ({c["text_norm"] for c in splits["train"]} & {c["text_norm"] for c in splits["val"]})
 
-    # ---- write audio + manifests ----------------------------------------------------------------
     speakers = sorted({c["speaker"] for s in splits.values() for c in s})
     spk2id = {s: i for i, s in enumerate(speakers)}
     stats = {"seed": d["seed"], "source": d["hf_dataset"], "rows_in_source": len(ds),
@@ -130,7 +119,6 @@ def select(cfg):
     print(json.dumps(stats, indent=2))
 
 
-# ------------------------------------------------------------------------------------ stage 2
 def split_durations(groups, words, starts, n_frames, a, cap_s):
     """Word-level alignment -> phone-level durations (frames). Returns (tokens, durations)."""
     sr, hop = a["sampling_rate"], a["hop_length"]

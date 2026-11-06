@@ -1,12 +1,4 @@
-"""Telugu / IndicTTS preprocessing.
-
-Stage 1 `select`   : stream IndicTTS Telugu from Hugging Face (no full 6+ GB download), keep ONE voice,
-                     pick ~5 h train + ~1 h validation, write 22.05 kHz wavs + manifests.
-Stage 2 `features` : mel, energy, F0 and forced-alignment durations -> preprocessed_dir/*.npz.
-
-    python preprocess.py --stage select
-    python preprocess.py --stage features
-"""
+"""Telugu audio preprocessing and feature extraction."""
 import argparse
 import csv
 import io
@@ -31,7 +23,6 @@ def to_mono_22k(wav, sr, target):
     return (wav / peak * 0.95 if peak > 0 else wav).astype(np.float32)
 
 
-# ------------------------------------------------------------------------------------ stage 1
 def select(cfg):
     from datasets import Audio, load_dataset
     d, a = cfg["data"], cfg["audio"]
@@ -105,7 +96,6 @@ def select(cfg):
     print(json.dumps(stats, indent=2, ensure_ascii=False))
 
 
-# ------------------------------------------------------------------------------------ stage 2
 def features(cfg, device):
     import torch
     import torchaudio
