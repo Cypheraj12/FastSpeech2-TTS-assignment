@@ -29,8 +29,7 @@ Thumbs.db
 Report/*.html
 Report/*.md
 Report/*.py
-Report/*.pdf
-!Report/.gitkeep
+!Report/Technical_Report.pdf
 notebook/
 tests/
 English/finetune_speaker.py
@@ -42,3 +41,8 @@ Results/*/*.json
 
 # Intermediate HTML
 Report/*.html
+
+scratch/
+Results/*/variance_adaptor_plots/energy_token/
+Results/*/variance_adaptor_plots/mel/
+Results/*/variance_adaptor_plots/pitch_token/
