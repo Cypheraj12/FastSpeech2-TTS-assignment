@@ -1,6 +1,6 @@
 # 7 Nov 2026
 
-## **DAILY LOG, errors,learning and decisions**
+## **FINAL LOG**
 
 final evaluation and project wrap-up: verified all generated benchmark audios and variance adaptor plots, checked checkpoint links, and organized the final submission.
 
@@ -19,7 +19,7 @@ final evaluation and project wrap-up: verified all generated benchmark audios an
 
 ### observations & limitations:
 
-1. English multi-speaker model retains some background room coloration and minor slurring on long compound words (E1) due to the crowdsourced mobile phone acoustic variance in Svarah.
+1. English multi-speaker model retains some background room coloration and minor slurring on long compound words  due to the crowdsourced mobile phone acoustic variance in Svarah.
 2. Telugu single-speaker model achieves clear, studio-grade formants and natural melodic pitch cadence with crisp character transitions.
 
 
