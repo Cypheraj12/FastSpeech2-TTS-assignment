@@ -44,7 +44,8 @@ project/
 ├── daily_log/
 │   ├── 4 nov.md
 │   ├── 5 nov.md
-│   └── 6 nov.md
+│   ├── 6 nov.md
+│   └── 7 nov.md
 └── requirements.txt
 ```
 
