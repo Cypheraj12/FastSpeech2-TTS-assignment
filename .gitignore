@@ -25,8 +25,12 @@ Telugu/checkpoints/step_*.pt
 .DS_Store
 Thumbs.db
 
-# Excluded per submission structure specification
-Report/
+# Excluded intermediate files in Report
+Report/*.html
+Report/*.md
+Report/*.py
+Report/*.pdf
+!Report/.gitkeep
 notebook/
 tests/
 English/finetune_speaker.py
